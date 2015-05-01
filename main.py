@@ -26,22 +26,22 @@ def main():
             if event.type == pygame.QUIT:
                 done = True
 
+        collides, kill = background.collision_check(player)
+        #print collides
+
         #erases past junk
     	screen.fill((0,0,0))
-        
-        #Copy background to screen and puts in default player
-        screen.blit(background.image, [background.x, background.y])
+
+        background.blit(screen)
+
         screen.blit(player.default_image, [player.x, player.y])
 
-        #Text Stuff
-        screen.blit(background.text,(0, 0))
-        
         #Tests for key presses and loads images
         pressed = pygame.key.get_pressed()
 
         #player update
-        player.keyPress(pressed, background)
-        player.update(dt)
+        player.keyPress(pressed, background, collides)
+        player.update(dt, collides)
 
         clock.tick(1/dt) #waits 1/24 second
         pygame.display.flip()
