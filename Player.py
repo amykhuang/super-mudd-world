@@ -29,21 +29,24 @@ class Player(pygame.sprite.Sprite):
 		self.imageR.set_colorkey((255,255,255))
 		self.imageL.set_colorkey((255,255,255))
 
-	def keyPress(self, pressed, background):
-		if pressed[pygame.K_UP] and self.state == Player.STANDING:
-			self.jump()
+	def get_rect(self):
+		return pygame.Rect([self.x, self.y],[self.width, self.height])
+
+	def keyPress(self, pressed, background, collides):
+		if pressed[pygame.K_UP] and self.state == Player.STANDING and "top" not in collides:
+			self.jump(collides)
 			self.state = Player.JUMPING
 
 		#if pressed[pygame.K_DOWN]: y += 3
 
-		if pressed[pygame.K_LEFT] and self.x > 0:
+		if pressed[pygame.K_LEFT] and self.x > 0 and "left" not in collides:
 			self.default_image = self.imageL
 			if self.x < 200 or background.x > -200:
 				self.x -= 3
 			elif background.x < 200: 
 				background.x += 3
 
-		if pressed[pygame.K_RIGHT] and self.x < 900:
+		if pressed[pygame.K_RIGHT] and self.x < 900 and "right" not in collides:
 			self.default_image = self.imageR
 			if self.x < 200:
 				self.x += 3
@@ -51,7 +54,9 @@ class Player(pygame.sprite.Sprite):
 				background.x -= 3
 			#self.move_sound.play()
 
-	def update(self, dt):
+	def update(self, dt, collides):
+		if "top" in collides:
+			self.vel[1] = 0
 		self.x += self.vel[0]*dt
 		self.y += self.vel[1]*dt
 
@@ -63,8 +68,9 @@ class Player(pygame.sprite.Sprite):
 			self.state = Player.STANDING
 
 
-	def jump(self):
+	def jump(self, collides):
 		self.vel[1] -= 500
+
 
 		if self.y >= 395:
 			self.vel[1] = 0
