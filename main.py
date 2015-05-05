@@ -3,7 +3,7 @@ from Player import Player
 from Background import Background
 
 def main():
-    """ Main game loop lives here. Also loading pictures and stuff.
+    """ Main game loop lives here.
     """
     pygame.init()
 
@@ -27,26 +27,26 @@ def main():
                 done = True
 
         collides, kill = background.collision_check(player)
-        #print collides
 
         #erases past junk
     	screen.fill((0,0,0))
 
+        #blit things to screen
         background.blit(screen)
-
-        screen.blit(player.default_image, [player.x, player.y])
+        player.blit(screen)
 
         #Tests for key presses and loads images
         pressed = pygame.key.get_pressed()
 
         #player update
-        player.keyPress(pressed, background, collides)
-        player.update(dt, collides)
+        player.getEvent(pressed, background, collides)
+        player.update(dt, background, collides)
+        background.update(dt, collides)
 
         clock.tick(1/dt) #waits 1/24 second
         pygame.display.flip()
 
-
+    pygame.quit()
 
 def walkcycle():
     """Makes the walk animation
