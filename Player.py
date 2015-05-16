@@ -2,11 +2,10 @@ import pygame
 from Background import Background as bg
 
 class Player(pygame.sprite.Sprite):
-	STANDING = 0
-	JUMPING = 1
+	STANDING = "standing"
+	JUMPING = "jumping"
 
 	GRAVITY = 1000
-	FRICTION = 1000
 
 	def __init__(self):
 		#loading images
@@ -16,8 +15,9 @@ class Player(pygame.sprite.Sprite):
 		self.width = self.imageR.get_width()
 
 		self.default_image = self.imageR
-		self.state = Player.STANDING
+		self.state = "standing"
 		self.move_sound = pygame.mixer.Sound('smb_jumpsmall.wav')
+		self.isjump = False
 
 		self.rect = self.imageR.get_rect()
 
@@ -32,63 +32,79 @@ class Player(pygame.sprite.Sprite):
 		self.imageR.set_colorkey((255,255,255))
 		self.imageL.set_colorkey((255,255,255))
 
-	def getEvent(self, pressed, background, collides):
-		if pressed[pygame.K_UP] and self.state == Player.STANDING and "top" not in collides:
-			self.jump()
-			self.state = Player.JUMPING
-
-		#if pressed[pygame.K_DOWN]: y += 3
-
-		if pressed[pygame.K_LEFT] and self.rect.x > 0 and "left" not in collides:
-			self.default_image = self.imageL
-			if self.rect.x < 200 or background.rect.x > -10:
-				self.go_left()
-			elif background.rect.x < 200: 
-				background.shift_world(self.vel[0])
-
-		if pressed[pygame.K_RIGHT] and self.rect.x < 900 and "right" not in collides:
-			self.default_image = self.imageR
-			if self.rect.x < 200:
-				self.go_right()
-			elif background.rect.x > bg.SCREEN_WIDTH - background.width:
-				background.shift_world(-self.vel[0])
-			#self.move_sound.play()
-
-	def gravity(self, dt):
-		if self.rect.y < bg.SCREEN_HEIGHT:
-			self.vel[1] += Player.GRAVITY * dt
-		if self.rect.y >= bg.SCREEN_HEIGHT - self.height - bg.BOTTOM_MARGIN:
-			self.vel[1] = 0
-			self.state = Player.STANDING
-		if self.vel[0] > 0:
-			self.vel[0] -= Player.FRICTION * dt
-		if self.vel[0] < 0:
-			self.vel[0] += Player.FRICTION * dt
-
+	#writing to the screen
 	def blit(self, screen):
 		screen.blit(self.default_image, [self.rect.x, self.rect.y])
 
-	def update(self, dt, backgrond, collides):
-		if "top" in collides:
-			self.vel[1] = 0
+	def getEvent(self, background):
+		pressed = pygame.key.get_pressed() #get keypress
+
+		if pressed[pygame.K_UP] and self.state == Player.STANDING:
+			self.isjump = True
+
+		if pressed[pygame.K_LEFT] and self.rect.x > 0:
+			self.vel[0] = -bg.STEP #amount to travel left
+
+		if pressed[pygame.K_RIGHT] and self.rect.x < 900:
+			self.vel[0] = bg.STEP
+			#self.move_sound.play()
+
+	def gravity(self, dt):
+		self.vel[1] += Player.GRAVITY * dt
+
+	def update(self, dt, background):
+		#get event from keypress
+		self.getEvent(background)
+
+		#check if jumping
+		if self.isjump:	#jump!
+			self.jump()
+			self.isjump = False
+			self.state = "jumping"
 
 		#update positions
-		self.rect.x += self.vel[0]*dt
-		self.rect.y += self.vel[1]*dt
+		dx = self.vel[0]
+		dy = self.vel[1] * dt
+		
+		#collides, kill = background.collision_check_h(self)
+		self.move(dx, 0, background, dt)
+		self.move(0, dy, background, dt)
 
-		#call gravity
 		self.gravity(dt)
+		self.vel[0] = 0
 
+	def move(self, dx, dy, background, dt):
+		# move the rect
+		if self.vel[0] < 0 and self.rect.x > 0:	#move lieft
+			self.default_image = self.imageL
+			if self.rect.x < 200 or background.rect.x > -10:
+				self.rect.left += dx
+			elif background.rect.x < 200:
+				background.shift_world(dx)
+		if self.vel[0] > 0 and self.rect.x < 900:	#move right
+			self.default_image = self.imageR
+			if self.rect.x < 200:
+				self.rect.left += dx
+			elif background.rect.x > bg.SCREEN_WIDTH - background.width:
+				background.shift_world(dx)
+		self.rect.y += dy
+
+		# checking for collisions
+		block_hit_list = pygame.sprite.spritecollide(self, background.platforms, False)
+		for block in block_hit_list:
+			if self.rect.colliderect(block.rect):
+				if dx > 0:
+					self.rect.right = block.rect.left
+				if dx < 0:
+					self.rect.left = block.rect.right
+				if dy > 0:
+					self.rect.bottom = block.rect.top
+					self.vel[1] = 0
+					self.state = "standing"
+				if dy < 0:
+					self.rect.top = block.rect.bottom
+					self.gravity(dt)
 
 	def jump(self):
 		self.vel[1] -= 500
-
-		if self.rect.y >= 395:
-			self.vel[1] = 0
-
-	def go_left(self):
-		self.vel[0] -= 50
-
-	def go_right(self):
-		self.vel[0] += 50
 
