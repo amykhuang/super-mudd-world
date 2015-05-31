@@ -19,10 +19,10 @@ class Background(pygame.sprite.Sprite):
 		self.platforms = []
 		#might put these positions in a separate file at some point
 		self.plat_positions = [
-			[100, 300],
-			[300, 200],
-			[600, 240],
-			[200, 360]
+			[100, 300, "platform"],
+			[300, 200, "platform"],
+			[600, 240, "platform"],
+			[200, 360, "spike"]
 		]
 		self.make_Platforms()
 		
@@ -42,43 +42,10 @@ class Background(pygame.sprite.Sprite):
 		for i in self.platforms:
 			i.blit(screen)
 
-	def collision_check_h(self, player):
-		collided = ""
-		kill = False
-
-		block_hit_list = pygame.sprite.spritecollide(player, self.platforms, False)
-		for block in block_hit_list:
-			if player.vel[0] > 0:
-				player.rect.right = block.rect.left
-				collided += "right"
-			elif player.vel[0] < 0:
-				player.rect.left = block.rect.right
-				collided += "left"
-
-		return collided, kill
-
-	def collision_check_v(self, player):
-		collided = ""
-		kill = False
-
-		block_hit_list = pygame.sprite.spritecollide(player, self.platforms, False)
-		for block in block_hit_list:
-			# Reset our position based on the top/bottom of the object.
-			if player.vel[1] > 0:
-				player.rect.bottom = block.rect.top
-				collided += "bottom"
-			elif player.vel[1] < 0:
-				player.rect.top = block.rect.bottom
-				collided += "top"
-			player.vel[1] = 0	#resetting to 0 so it doesn't keep moving
-
-		return collided, kill
-
-
 	def make_Platforms(self):
 		self.platforms += [Platform(0, Background.SCREEN_HEIGHT-Background.BOTTOM_MARGIN, "ground")]
 		for i in self.plat_positions:
-			new_plat = Platform(i[0],i[1], "platform")
+			new_plat = Platform(i[0],i[1],i[2])
 			self.platforms += [new_plat]
 
 	def shift_world(self, shift):
@@ -90,6 +57,8 @@ class Platform:
 	def __init__(self, x, y, typ):
 		if typ == "platform":
 			self.image = pygame.image.load('redplat.png').convert()
+		elif typ == "spike":
+			self.image = pygame.image.load('spikeplat.png').convert()
 		else:
 			self.image = pygame.image.load('ground.png').convert_alpha()
 
