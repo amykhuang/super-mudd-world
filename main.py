@@ -17,35 +17,24 @@ def main():
 
     #time stuff
     clock = pygame.time.Clock()
-    dt = 1.0/30 #time step        
+    fps = 30 #time step        
     
     while not done:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 done = True
         
-        #erases past junk
-    	screen.fill((0,0,0))
+        screen.fill((0,0,0))    #erases past junk
 
-        #blit things to screen
-        background.blit(screen)
+        background.blit(screen) #blit things to screen
         player.blit(screen)
 
-        #player update
-        player.update(dt, background)
+        player.update(1.0/fps, background)   #player update
 
-        clock.tick(1/dt) #waits 1/40 second
+        clock.tick(fps)
         pygame.display.flip()
 
     pygame.quit()
-
-def walkcycle():
-    """Makes the walk animation
-    """
-
-def walktimer():
-    """
-    """
 
 if __name__ == "__main__":
    main()
