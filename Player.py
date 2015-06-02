@@ -1,28 +1,18 @@
 import pygame
 from Background import Background as bg
-
-WHITE = (255,255,255)
+import resources as R
 
 class Player(pygame.sprite.Sprite):
-	GRAVITY = 1000
 
 	def __init__(self):
 		#loading images
-		self.imageR = pygame.image.load('images/spear1.png').convert()
-		self.imageR1 = pygame.image.load('images/exbig1.png').convert()
-		self.imageR2 = pygame.image.load('images/exbig2.png').convert()
-		self.imageR3 = pygame.image.load('images/exbig3.png').convert()
-		self.imageL = pygame.image.load('images/spear1L.png').convert()
-		self.default_image = self.imageR1
+		self.default_image = R.IMAGES["exbig1.png"]
 
-		player_images = [self.imageR, self.imageR1, self.imageR2, self.imageR3, self.imageL]
+		self.height = self.default_image.get_height()
+		self.width = self.default_image.get_width()
+		self.rect = self.default_image.get_rect()
 
-		self.height = self.imageR.get_height()
-		self.width = self.imageR.get_width()
-		self.rect = self.imageR.get_rect()
-
-		self.move_sound = pygame.mixer.Sound('sounds/smb_jumpsmall.wav')
-		self.font = pygame.font.Font("Fipps-Regular.otf", 30)
+		self.move_sound = R.SOUNDS['smb_jumpsmall.wav']
 
 		self.state = "standing"
 		self.isjump = False
@@ -30,24 +20,19 @@ class Player(pygame.sprite.Sprite):
 		self.damaged = False
 		self.damage_time = 0
 
-		#position
+		#position and velocity
 		self.rect.x = 0
-		self.rect.y = bg.SCREEN_HEIGHT - self.height - bg.BOTTOM_MARGIN
-		#velocity
+		self.rect.y = R.SCREEN_HEIGHT - self.height - R.BOTTOM_MARGIN
 		self.vel = [0,0]
-		
-		#making white parts black
-		for image in player_images:
-			image.set_colorkey(WHITE)
 
 	#writing to the screen
 	def blit(self, screen):
 		screen.blit(self.default_image, [self.rect.x, self.rect.y])	#self
 
-		health = self.font.render(str(self.health), True, (0,0,0))
-		screen.blit(health, [bg.SCREEN_WIDTH-health.get_width()-10,0])	#health
+		health = R.FONTS['Fipps-Regular.otf'].render(str(self.health), True, (0,0,0))
+		screen.blit(health, [R.SCREEN_WIDTH - health.get_width() - 10, 0])	#health
 
-	def getEvent(self, background):
+	def getEvent(self):
 		""" reads the keypress
 		"""
 		pressed = pygame.key.get_pressed() #get keypress
@@ -56,15 +41,15 @@ class Player(pygame.sprite.Sprite):
 			self.isjump = True
 
 		if pressed[pygame.K_LEFT] and self.rect.x > 0:
-			self.vel[0] = -bg.STEP #amount to travel left
+			self.vel[0] = -R.STEP #amount to travel left
 
 		if pressed[pygame.K_RIGHT] and self.rect.x < 900:
-			self.vel[0] = bg.STEP
+			self.vel[0] = R.STEP
 			#self.move_sound.play()
 
-	def update(self, dt, background):
+	def update(self, dt, bg):
 		#get event from keypress
-		self.getEvent(background)
+		self.getEvent()
 
 		ticks = pygame.time.get_ticks()	#time elapsed so far
 
@@ -79,8 +64,8 @@ class Player(pygame.sprite.Sprite):
 		dy = self.vel[1] * dt
 		
 		#collides, kill = background.collision_check_h(self)
-		self.move(dx, 0, background, dt, ticks)
-		self.move(0, dy, background, dt, ticks)
+		self.move(dx, 0, bg, dt, ticks)
+		self.move(0, dy, bg, dt, ticks)
 
 		self.gravity(dt)
 		self.vel[0] = 0
@@ -89,25 +74,25 @@ class Player(pygame.sprite.Sprite):
 			return "gameover"		#sets game_over to True
 		return "in_game"
 
-	def move(self, dx, dy, background, dt, ticks):
+	def move(self, dx, dy, bg, dt, ticks):
 		""" moves the Player
 		"""
 		if self.vel[0] < 0 and self.rect.x > 0:	#move left
 			self.walkcycle("left", ticks)
-			if self.rect.x < 200 or background.rect.x > -10:
+			if self.rect.x < 200 or bg.rect.x > -10:
 				self.rect.left += dx
-			elif background.rect.x < 200:
-				background.shift_world(dx)
+			elif bg.rect.x < 200:
+				bg.shift_world(dx)
 		if self.vel[0] > 0 and self.rect.x < 900:	#move right
 			self.walkcycle("right", ticks)
 			if self.rect.x < 200:
 				self.rect.left += dx
-			elif background.rect.x > bg.SCREEN_WIDTH - background.width:
-				background.shift_world(dx)
+			elif bg.rect.x > R.SCREEN_WIDTH - bg.width:
+				bg.shift_world(dx)
 		self.rect.y += dy
 
 		# checking for collisions
-		block_hit_list = pygame.sprite.spritecollide(self, background.platforms, False)
+		block_hit_list = pygame.sprite.spritecollide(self, bg.platforms, False)
 		for block in block_hit_list:
 			if self.rect.colliderect(block.rect):
 				if dx > 0:
@@ -140,22 +125,22 @@ class Player(pygame.sprite.Sprite):
 	    """
 	    if direction == "left":
 	    	if ticks % 30 <= 10:
-	    		self.default_image = self.imageL
+	    		self.default_image = R.IMAGES["spear1L.png"].convert()
 	    	elif ticks % 30 <= 20 and ticks % 30 > 10:
-	    		self.default_image = self.imageL
+	    		self.default_image = R.IMAGES["spear1L.png"].convert()
 	    	else:
-	    		self.default_image = self.imageL
+	    		self.default_image = R.IMAGES["spear1L.png"].convert()
 	    elif direction == "right":
 	    	if ticks % 30 <= 10:
-	    		self.default_image = self.imageR1
+	    		self.default_image = R.IMAGES["exbig1.png"].convert()
 	    	elif ticks % 30 <= 20 and ticks % 30 > 10:
-	    		self.default_image = self.imageR2
+	    		self.default_image = R.IMAGES["exbig2.png"].convert()
 	    	else:
-	    		self.default_image = self.imageR3
+	    		self.default_image = R.IMAGES["exbig3.png"].convert()
 
 
 	def gravity(self, dt):
-		self.vel[1] += Player.GRAVITY * dt
+		self.vel[1] += R.GRAVITY * dt
 
 	def jump(self):
 		self.vel[1] -= 500
