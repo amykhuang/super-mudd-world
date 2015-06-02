@@ -9,7 +9,7 @@ class Background(pygame.sprite.Sprite):
 
 	def __init__(self):
 		#load image
-		self.image = pygame.image.load('background-1500.png').convert()
+		self.image = pygame.image.load('images/background-1500.png').convert()
 		self.width = self.image.get_width()
 		self.height = self.image.get_height()
 		self.rect = self.image.get_rect()
@@ -33,6 +33,7 @@ class Background(pygame.sprite.Sprite):
 
 		#text 
 		self.font = pygame.font.Font("Fipps-Regular.otf", 30)
+		self.smallfont = pygame.font.Font("Fipps-Regular.otf", 20)
 		self.text = self.font.render(self.title, True, (0,0,0))
 
 	#writing to the screen
@@ -41,6 +42,21 @@ class Background(pygame.sprite.Sprite):
 		screen.blit(self.text, (0,0))
 		for i in self.platforms:
 			i.blit(screen)
+
+	def endscreen(self, screen):
+		screen.fill((0,0,0))
+		title = self.font.render("Game Over", True, (100,0,0))
+		title_rect = title.get_rect()
+		title_x = screen.get_width()/2 - title_rect.width/2
+		title_y = screen.get_height()/2 - title_rect.height/2 - 20
+		subtitle = self.smallfont.render("Press space to play again. Press q to quit.", True, (100,0,0))
+		subtitle_rect = subtitle.get_rect()
+		subtitle_x = screen.get_width()/2 - subtitle_rect.width/2
+		subtitle_y = screen.get_height()/2 - subtitle_rect.height/2 + 70
+
+		screen.blit(title, [title_x, title_y])
+		screen.blit(subtitle, [subtitle_x, subtitle_y])
+
 
 	def make_Platforms(self):
 		self.platforms += [Platform(0, Background.SCREEN_HEIGHT-Background.BOTTOM_MARGIN, "ground")]
@@ -56,11 +72,11 @@ class Background(pygame.sprite.Sprite):
 class Platform:
 	def __init__(self, x, y, typ):
 		if typ == "platform":
-			self.image = pygame.image.load('redplat.png').convert()
+			self.image = pygame.image.load('images/redplat.png').convert()
 		elif typ == "spike":
-			self.image = pygame.image.load('spikeplat.png').convert()
+			self.image = pygame.image.load('images/spikeplat.png').convert()
 		else:
-			self.image = pygame.image.load('ground.png').convert_alpha()
+			self.image = pygame.image.load('images/ground.png').convert_alpha()
 
 		self.height = self.image.get_height()
 		self.width = self.image.get_width()
