@@ -4,22 +4,17 @@ import resources as R
 from tiles import *
 from enemy import Enemy
 
-class Map():
-	def __init__(self):
-		self.platforms = pygame.sprite.Group()
-		self.enemies = pygame.sprite.Group()
-
-		#position and velocity
-		self.rect.x = 0
-		self.rect.y = 0
-		self.vel = [0,0]
-
+class Map():				
 	def make_map(self, level):
 		for i in range(len(R.MAPS[level])):	#iterate through rows
 			for j in range(len(R.MAPS[level][i])):	#iterate through columns
 				n = R.MAPS[level][i][j]	#type of tile
 				if n == 1:	#platform
 					self.platforms.add(Platform(j*64,i*64))
+				if n == 2:	#spike platform
+					self.platforms.add(Spike(j*64,i*64))
+				if n == 3:	#wart
+					self.enemies.add(Enemy(j*64,i*64,'wart'))
 
 	#writing to the screen
 	def blit(self, screen, dt):
@@ -34,7 +29,7 @@ class Map():
 
 	def make_Enemies(self):
 		#add a for loop
-		self.enemies.add(Enemy(450, 'box'))
+		pass
 
 	def shift_world(self, shift):
 		self.rect.x -= shift
@@ -45,19 +40,25 @@ class Map():
 
 class Map00(Map):
 	def __init__(self):
-		Map.__init__(self)
-		self.name = "Linde"
+		self.title = "Linde"
+		self.level = 0
 		self.image = R.TMX['Map00.png']
 		self.map = R.MAPS[0]
 
 		self.width = self.image.get_width()
 		self.height = self.image.get_height()
 		self.rect = self.image.get_rect()
-		self.title = "Linde"
-		self.level = 0
 
-		self.make_Enemies()
+		self.platforms = pygame.sprite.Group()
+		self.enemies = pygame.sprite.Group()
+		self.objects = pygame.sprite.Group()
 		self.make_map(0)
+		self.make_Enemies()
+
+		self.rect.x = 0
+		self.rect.y = 0
+		self.vel = [0,0]
+
 
 class Endscreen(Map):
 	def __init__(self, screen):
