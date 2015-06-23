@@ -1,12 +1,11 @@
 import pygame
-from Background import Background as bg
 import resources as R
 
 class Player(pygame.sprite.Sprite):
 
 	def __init__(self):
 		#loading images
-		self.default_image = R.IMAGES["exbig1.png"]
+		self.default_image = R.IMAGES["walkR1.png"]
 
 		self.height = self.default_image.get_height()
 		self.width = self.default_image.get_width()
@@ -16,20 +15,21 @@ class Player(pygame.sprite.Sprite):
 
 		self.state = "standing"
 		self.isjump = False
+		self.platform_speed_x = 0
 		self.health = 10
 		self.damaged = False
 		self.damage_time = 0
+		self.on_enemy = False	#check if standing on top of enemy
 
 		#position and velocity
 		self.rect.x = 0
-		self.rect.y = R.SCREEN_HEIGHT - self.height - R.BOTTOM_MARGIN
+		self.rect.y = 300
 		self.vel = [0,0]
 
 	#writing to the screen
 	def blit(self, screen):
 		screen.blit(self.default_image, [self.rect.x, self.rect.y])	#self
-
-		health = R.FONTS['Fipps-Regular.otf'].render(str(self.health), True, (0,0,0))
+		health = R.FONTS['Fipps Medium'].render(str(self.health), True, (0,0,0))
 		screen.blit(health, [R.SCREEN_WIDTH - health.get_width() - 10, 0])	#health
 
 	def getEvent(self):
@@ -41,11 +41,13 @@ class Player(pygame.sprite.Sprite):
 			self.isjump = True
 
 		if pressed[pygame.K_LEFT] and self.rect.x > 0:
-			self.vel[0] = -R.STEP #amount to travel left
+			self.vel[0] = -R.STEP
 
 		if pressed[pygame.K_RIGHT] and self.rect.x < 900:
 			self.vel[0] = R.STEP
 			#self.move_sound.play()
+
+		self.vel[0] += self.platform_speed_x	#add the speed of what it's standing on
 
 	def update(self, dt, bg):
 		#get event from keypress
@@ -53,17 +55,17 @@ class Player(pygame.sprite.Sprite):
 
 		ticks = pygame.time.get_ticks()	#time elapsed so far
 
-		#check if jumping
-		if self.isjump:	#jump!
-			self.jump()
+		if self.isjump:	#check if jumping
+			self.jump() #jump!
 			self.isjump = False
 			self.state = "jumping"
+			self.platform_speed_x = 0
 
 		#update positions
 		dx = self.vel[0]
 		dy = self.vel[1] * dt
 		
-		#collides, kill = background.collision_check_h(self)
+		#move positions
 		self.move(dx, 0, bg, dt, ticks)
 		self.move(0, dy, bg, dt, ticks)
 
@@ -79,7 +81,7 @@ class Player(pygame.sprite.Sprite):
 		"""
 		if self.vel[0] < 0 and self.rect.x > 0:	#move left
 			self.walkcycle("left", ticks)
-			if self.rect.x < 200 or bg.rect.x > -10:
+			if self.rect.x - bg.rect.x <= 200 or bg.rect.x > -10:
 				self.rect.left += dx
 			elif bg.rect.x < 200:
 				bg.shift_world(dx)
@@ -91,8 +93,10 @@ class Player(pygame.sprite.Sprite):
 				bg.shift_world(dx)
 		self.rect.y += dy
 
-		# checking for collisions
+		# collision checking
+		self.on_enemy = False
 		block_hit_list = pygame.sprite.spritecollide(self, bg.platforms, False)
+		block_hit_list += pygame.sprite.spritecollide(self, bg.enemies, False)
 		for block in block_hit_list:
 			if self.rect.colliderect(block.rect):
 				if dx > 0:
@@ -103,15 +107,24 @@ class Player(pygame.sprite.Sprite):
 					self.rect.bottom = block.rect.top
 					self.vel[1] = 0
 					self.state = "standing"
+					self.on_enemy = True
+ 					self.platform_speed_x = block.vel[0]	#save the speed of platform
 				if dy < 0:
 					self.rect.top = block.rect.bottom
 					self.vel[1] = -0.3 * self.vel[1]	#bouncing off
 				self.damage_time = self.damage(block, ticks)	#checking for damage
+
 	
 	def damage(self, block, ticks):
 		""" decreases health when running into things
 		"""
+		#runs into spike platform
 		if block.type == "spike" and self.damaged == False:
+			self.health -= 1
+			self.damaged = True
+			return ticks
+		#runs into enemy
+		elif block.type == "enemy" and self.on_enemy == False and self.damaged == False:
 			self.health -= 1
 			self.damaged = True
 			return ticks
@@ -123,20 +136,29 @@ class Player(pygame.sprite.Sprite):
 	def walkcycle(self, direction, ticks):
 	    """ creates the walking animation
 	    """
+	    n = ticks % 800
 	    if direction == "left":
-	    	if ticks % 30 <= 10:
-	    		self.default_image = R.IMAGES["spear1L.png"].convert()
-	    	elif ticks % 30 <= 20 and ticks % 30 > 10:
-	    		self.default_image = R.IMAGES["spear1L.png"].convert()
+	    	if self.state == "jumping":
+	    		self.default_image = R.IMAGES["walkL2.png"]
+	    	elif n <= 200:
+	    		self.default_image = R.IMAGES["walkL1.png"]
+	    	elif n <= 400 and n > 200:
+	    		self.default_image = R.IMAGES["walkL2.png"]
+	    	elif n <= 600 and n > 400:
+	    		self.default_image = R.IMAGES["walkL3.png"]
 	    	else:
-	    		self.default_image = R.IMAGES["spear1L.png"].convert()
+	    		self.default_image = R.IMAGES["walkL2.png"]
 	    elif direction == "right":
-	    	if ticks % 30 <= 10:
-	    		self.default_image = R.IMAGES["exbig1.png"].convert()
-	    	elif ticks % 30 <= 20 and ticks % 30 > 10:
-	    		self.default_image = R.IMAGES["exbig2.png"].convert()
+	    	if self.state == "jumping":
+	    		self.default_image = R.IMAGES["walkR2.png"]
+	    	elif n <= 200:
+	    		self.default_image = R.IMAGES["walkR1.png"]
+	    	elif n <= 400 and n > 200:
+	    		self.default_image = R.IMAGES["walkR2.png"]
+	    	elif n <= 600 and n > 400:
+	    		self.default_image = R.IMAGES["walkR3.png"]
 	    	else:
-	    		self.default_image = R.IMAGES["exbig3.png"].convert()
+	    		self.default_image = R.IMAGES["walkR2.png"]
 
 
 	def gravity(self, dt):
