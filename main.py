@@ -1,61 +1,65 @@
 import pygame
-from Player import Player
-from Background import Background
+from player import Player
+from maps import *
 import resources as R
 
-def main():
-    pygame.init()
+# TODO
+# smaller rects for collisions
+# fix enemy collision bug
 
-    #dimensions of screen
-    screen = pygame.display.set_mode((R.SCREEN_WIDTH, R.SCREEN_HEIGHT))
-    pygame.display.set_caption("Super Mudd World")
+class Game:
+    def __init__(self):
+        self.level = 0
 
-    #creating entities
-    player = Player()
-    background = Background()
+    def main(self):
+        pygame.init()
 
-    #states: in_game, gameover
-    state = "in_game"
+        #dimensions of screen
+        screen = pygame.display.set_mode((R.SCREEN_WIDTH, R.SCREEN_HEIGHT))
+        pygame.display.set_caption("Super Mudd World")
 
-    done = False
+        #creating entities
+        player = Player()
+        background = Map00()
 
-    #time stuff
-    clock = pygame.time.Clock()
-    fps = 30 #time step        
-    
-    while not done:
-        if state == "in_game":
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True
-            
-            screen.fill((0,0,0))    #erases past junk
+        #states: in_game, gameover
+        state = "in_game"
 
-            background.blit(screen) #blit things to screen
-            player.blit(screen)
+        done = False
 
-            state = player.update(1.0/fps, background)   #player update
-
-        elif state == "gameover":
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    done = True
-
-            background.endscreen(screen)
-
+        clock = pygame.time.Clock()
+        fps = 20 #time step        
+        
+        while not done:
             pressed = pygame.key.get_pressed()
-            if pressed[pygame.K_q]:
-                done = True
-            elif pressed[pygame.K_SPACE]:
-                state = "in_game"
-                player = Player()
-                background = Background()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    done = True
 
-        clock.tick(fps)
-        pygame.display.flip()
+            if state == "in_game":
+                screen.fill(R.BLACK)    #erases past junk
+
+                background.blit(screen, 1.0/fps) #blit things to screen
+                player.blit(screen)
+
+                state = player.update(1.0/fps, background)   #player update
+
+            elif state == "gameover":
+                endscreen = Endscreen(screen)
+
+                if pressed[pygame.K_q]:
+                    done = True
+                elif pressed[pygame.K_SPACE]:
+                    state = "in_game"
+                    player = Player()
+                    background = Background()
+
+            clock.tick(fps)
+            pygame.display.flip()
 
 
-    pygame.quit()
+        pygame.quit()
 
 if __name__ == "__main__":
-   main()
+    g = Game()
+    g.main()
