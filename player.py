@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
 
 		self.move_sound = R.SOUNDS['smb_jumpsmall.wav']
 
-		self.state = "standing"
+		self.state = "start"
 		self.isjump = False
 		self.platform_speed_x = 0
 		self.health = 10
@@ -80,16 +80,16 @@ class Player(pygame.sprite.Sprite):
 		""" moves the Player
 		"""
 		if self.vel[0] < 0 and self.rect.x > 0:	#move left
-			self.walkcycle("left", ticks)
-			if self.rect.x - bg.rect.x <= 200 or bg.rect.x > -10:
+			self.walkcycle(ticks)
+			if self.rect.x - bg.rect.x <= 200 or bg.rect.x > 0:
 				self.rect.left += dx
 			elif bg.rect.x < 200:
 				bg.shift_world(dx)
 		if self.vel[0] > 0 and self.rect.x < 900:	#move right
-			self.walkcycle("right", ticks)
+			self.walkcycle(ticks)
 			if self.rect.x < 200:
 				self.rect.left += dx
-			elif bg.rect.x > R.SCREEN_WIDTH - bg.width:
+			elif bg.rect.x > R.SCREEN_WIDTH - bg.image.get_width():
 				bg.shift_world(dx)
 		self.rect.y += dy
 
@@ -114,6 +114,12 @@ class Player(pygame.sprite.Sprite):
 					self.vel[1] = -0.3 * self.vel[1]	#bouncing off
 				self.damage_time = self.damage(block, ticks)	#checking for damage
 
+		# collision checking for objects
+		object_hit_list = pygame.sprite.spritecollide(self, bg.objects, False)
+		for thing in object_hit_list:
+			if self.rect.colliderect(thing.rect):
+				if thing.deadly == True:
+					self.damage_time = self.damage(thing, ticks)
 	
 	def damage(self, block, ticks):
 		""" decreases health when running into things
@@ -124,7 +130,7 @@ class Player(pygame.sprite.Sprite):
 			self.damaged = True
 			return ticks
 		#runs into enemy
-		elif block.type == "enemy" and self.on_enemy == False and self.damaged == False:
+		elif block.deadly == True and self.on_enemy == False and self.damaged == False:
 			self.health -= 1
 			self.damaged = True
 			return ticks
@@ -133,11 +139,11 @@ class Player(pygame.sprite.Sprite):
 				self.damaged = False
 			return self.damage_time
 
-	def walkcycle(self, direction, ticks):
+	def walkcycle(self, ticks):
 	    """ creates the walking animation
 	    """
 	    n = ticks % 800
-	    if direction == "left":
+	    if self.vel[0] < 0:
 	    	if self.state == "jumping":
 	    		self.default_image = R.IMAGES["walkL2.png"]
 	    	elif n <= 200:
@@ -148,7 +154,7 @@ class Player(pygame.sprite.Sprite):
 	    		self.default_image = R.IMAGES["walkL3.png"]
 	    	else:
 	    		self.default_image = R.IMAGES["walkL2.png"]
-	    elif direction == "right":
+	    elif self.vel[0] >= 0:
 	    	if self.state == "jumping":
 	    		self.default_image = R.IMAGES["walkR2.png"]
 	    	elif n <= 200:
