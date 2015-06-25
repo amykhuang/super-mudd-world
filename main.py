@@ -5,7 +5,9 @@ import resources as R
 
 # TODO
 # smaller rects for collisions
-# fix enemy collision bug
+# fix moving enemy collision bug
+
+# when it gets to end, player can move past center of screen
 
 class Game:
     def __init__(self):

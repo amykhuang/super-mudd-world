@@ -12,14 +12,11 @@ class Object(pygame.sprite.Sprite):
 		}
 
 		self.image = types[typ][0]
-
-		self.height = self.image.get_height()
-		self.width = self.image.get_width()
 		self.rect = self.image.get_rect()
 		
-		#position and velocity
+		#position
 		self.rect.x = x
-		self.rect.y = y + 64 - self.height
+		self.rect.y = y + 64 - self.image.get_height()
 
 		self.type = "object"
 		self.deadly = types[typ][1]

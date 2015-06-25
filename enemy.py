@@ -24,9 +24,10 @@ class Enemy(pygame.sprite.DirtySprite):
 		self.step = types[typ][2]
 		self.vel = [self.step, 0]
 
-		self.type = "enemy"
+		self.type = typ
 		self.species = "wart"
 		self.dead = False
+		self.deadly = True
 		self.dirty = 1
 
 	def update(self, dt, bg_pos):

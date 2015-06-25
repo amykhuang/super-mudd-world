@@ -3,64 +3,70 @@ import pytmx
 import resources as R
 from tiles import *
 from enemy import Enemy
+from objects import Object
 
-class Map():				
-	def make_map(self, level):
-		for i in range(len(R.MAPS[level])):	#iterate through rows
-			for j in range(len(R.MAPS[level][i])):	#iterate through columns
-				n = R.MAPS[level][i][j]	#type of tile
+class Map(pygame.sprite.Sprite):	
+	def __init__(self):
+		self.platforms = pygame.sprite.Group()
+		self.enemies = pygame.sprite.Group()
+		self.objects = pygame.sprite.Group()
+		self.vel = [0,0]
+
+	def make_map(self, map_array, level):
+		""" iterate through map arrays to set platforms, objects, etc.
+		"""
+		for i in range(len(map_array)):	#iterate through rows
+			for j in range(len(map_array[i])):	#iterate through columns
+				n = map_array[i][j]	#type of tile
 				if n == 1:	#platform
 					self.platforms.add(Platform(j*64,i*64))
 				if n == 2:	#spike platform
 					self.platforms.add(Spike(j*64,i*64))
 				if n == 3:	#wart
 					self.enemies.add(Enemy(j*64,i*64,'wart'))
+				if n == 'c': #cup
+					self.objects.add(Object(j*64,i*64,'cup'))
+				if n == 'g': #glass
+					self.objects.add(Object(j*64,i*64,'glass'))
 
-	#writing to the screen
 	def blit(self, screen, dt):
 		screen.blit(self.image, [self.rect.x, self.rect.y])	#background image
 		text = R.FONTS['Fipps Medium'].render(self.title, True, (0,0,0))
 		screen.blit(text, (2,0))	#title
-		self.platforms.draw(screen)	#platforms
-		self.enemies.draw(screen)	#enemies
+		self.platforms.draw(screen)
+		self.enemies.draw(screen)
+		self.objects.draw(screen)
 
 		#update enemy positions
 		self.enemies.update(dt, self.rect.x)
 
-	def make_Enemies(self):
-		#add a for loop
-		pass
-
 	def shift_world(self, shift):
+		""" moves the background objects as the player moves
+		"""
 		self.rect.x -= shift
 		for platform in self.platforms:
 			platform.rect.x -= shift
 		for enemy in self.enemies:
-			enemy.rect.x -= shift
+		 	enemy.rect.x -= shift
+		for thing in self.objects:
+		 	thing.rect.x -= shift
 
 class Map00(Map):
 	def __init__(self):
+		Map.__init__(self)
 		self.title = "Linde"
 		self.level = 0
 		self.image = R.TMX['Map00.png']
-		self.map = R.MAPS[0]
-
-		self.width = self.image.get_width()
-		self.height = self.image.get_height()
+		self.make_map(R.MAPS[0], self.level)
+		
 		self.rect = self.image.get_rect()
-
-		self.platforms = pygame.sprite.Group()
-		self.enemies = pygame.sprite.Group()
-		self.objects = pygame.sprite.Group()
-		self.make_map(0)
-		self.make_Enemies()
-
 		self.rect.x = 0
 		self.rect.y = 0
-		self.vel = [0,0]
-
 
 class Endscreen(Map):
+	""" the game over screen
+		asks if the player would like to play again or exit
+	"""
 	def __init__(self, screen):
 		screen.fill((0,0,0))
 		title = R.FONTS['Fipps Medium'].render("Game Over", True, (100,0,0))

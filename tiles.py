@@ -7,6 +7,7 @@ class Tile(pygame.sprite.Sprite):
 		self.image = R.IMAGES['tile.png']
 		self.rect = self.image.get_rect()
 		self.vel = [0,0]
+		self.deadly = False
 
 class Platform(Tile):
 	def __init__(self, x, y):
@@ -21,4 +22,5 @@ class Spike(Tile):
 		self.type = "spike"
 		self.rect.x = x
 		self.rect.y = y
+		self.deadly = True
 
