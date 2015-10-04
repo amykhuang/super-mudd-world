@@ -6,31 +6,31 @@ class Enemy(pygame.sprite.DirtySprite):
 	def __init__(self, x, y, typ):
 		pygame.sprite.Sprite.__init__(self)
 
-		types = {
-			'wart': [R.IMAGES["wart1L.png"], 100, 3]
+		enemy_dict = {	# [image, walkdistance, stepsize, health]
+			'wart': [R.IMAGES["wart1L.png"], 100, 3, 3]
 		}
 
-		self.image = types[typ][0]
+		self.image = enemy_dict[typ][0]
 		self.start = x
-		self.end = self.start + types[typ][1]	#distance that it walks
+		self.end = self.start + enemy_dict[typ][1]	#distance that it walks
 
 		self.height = self.image.get_height()
 		self.width = self.image.get_width()
 		self.rect = self.image.get_rect()
 		
 		#position and velocity
-		self.rect.x = x
-		self.rect.y = y + 64 - self.height
-		self.step = types[typ][2]
+		self.rect.left = x
+		self.rect.top = y + 64 - self.height
+		self.step = enemy_dict[typ][2]
 		self.vel = [self.step, 0]
 
-		self.type = typ
 		self.species = "wart"
 		self.dead = False
 		self.deadly = True
+		self.health = enemy_dict[typ][2]
 		self.dirty = 1
 
-	def update(self, dt, bg_pos):
+	def update(self, bg_pos):
 		""" update the position of the enemy
 			so that it moves back and forth
 		"""
@@ -38,14 +38,14 @@ class Enemy(pygame.sprite.DirtySprite):
 		self.walkcycle(ticks)
 
 		#turn around on reaching limits
-		if self.rect.x >= self.end + bg_pos:
+		if self.rect.left >= self.end + bg_pos:
 			self.vel[0] = -self.step
-		elif self.rect.x < self.start + bg_pos:
+		elif self.rect.left < self.start + bg_pos:
 			self.vel[0] = self.step
 
 		#update positions
 		dx = self.vel[0]
-		self.rect.x += dx
+		self.rect.left += dx
 
 	def walkcycle(self, ticks):
 		n = ticks % 800

@@ -6,8 +6,8 @@ import resources as R
 # TODO
 # smaller rects for collisions
 # fix moving enemy collision bug
-
-# when it gets to end, player can move past center of screen
+# player flashes when hurt
+# text boxes
 
 class Game:
     def __init__(self):
@@ -16,21 +16,21 @@ class Game:
     def main(self):
         pygame.init()
 
-        #dimensions of screen
+        # dimensions of screen
         screen = pygame.display.set_mode((R.SCREEN_WIDTH, R.SCREEN_HEIGHT))
         pygame.display.set_caption("Super Mudd World")
 
-        #creating entities
+        # creating entities
         player = Player()
         background = Map00()
 
-        #states: in_game, gameover
+        # states: in_game, gameover
         state = "in_game"
 
         done = False
 
         clock = pygame.time.Clock()
-        fps = 20 #time step        
+        fps = 30 #time step        
         
         while not done:
             pressed = pygame.key.get_pressed()
@@ -45,7 +45,7 @@ class Game:
                 player.blit(screen)
 
                 state = player.update(1.0/fps, background)   #player update
-
+                
             elif state == "gameover":
                 endscreen = Endscreen(screen)
 
@@ -54,7 +54,7 @@ class Game:
                 elif pressed[pygame.K_SPACE]:
                     state = "in_game"
                     player = Player()
-                    background = Background()
+                    background = Map00()
 
             clock.tick(fps)
             pygame.display.flip()

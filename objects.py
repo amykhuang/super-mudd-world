@@ -6,20 +6,20 @@ class Object(pygame.sprite.Sprite):
 	def __init__(self, x, y, typ):
 		pygame.sprite.Sprite.__init__(self)
 
-		types = {
-			'cup': [R.IMAGES['cup.png'], False],
-			'glass': [R.IMAGES['glass.png'], True]
+		object_dict = {
+			'cup': [R.IMAGES['cup.png'], False, 1],
+			'glass': [R.IMAGES['glass.png'], True, 0]
 		}
 
-		self.image = types[typ][0]
+		self.image = object_dict[typ][0]
 		self.rect = self.image.get_rect()
 		
 		#position
-		self.rect.x = x
-		self.rect.y = y + 64 - self.image.get_height()
+		self.rect.left = x
+		self.rect.top = y + 64 - self.image.get_height()
 
-		self.type = "object"
-		self.deadly = types[typ][1]
+		self.deadly = object_dict[typ][1]
+		self.health = object_dict[typ][2]
 		self.species = typ
 		self.picked_up = False
 
