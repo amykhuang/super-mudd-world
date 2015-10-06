@@ -13,7 +13,9 @@ class Player(pygame.sprite.Sprite):
 
 		self.move_sound = R.SOUNDS['smb_jumpsmall.wav']
 
+		# states include: start, standing, jumping
 		self.state = "start"
+		self.walking = False	# if not walking, don't do walkcycle images
 		self.isjump = False
 		self.platform_speed_x = 0
 		self.health = 10
@@ -45,14 +47,18 @@ class Player(pygame.sprite.Sprite):
 		"""
 		pressed = pygame.key.get_pressed() #get keypress
 
+		self.walking = False
+
 		if pressed[pygame.K_UP] and self.state == "standing":
 			self.isjump = True
 
 		if pressed[pygame.K_LEFT] and self.rect.left > 0:
 			self.vel[0] = -R.STEP
+			self.walking = True
 
 		if pressed[pygame.K_RIGHT] and self.rect.left < 900:
 			self.vel[0] = R.STEP
+			self.walking = True
 			# self.move_sound.play()
 
 		#add the speed of what it's standing on
@@ -109,7 +115,7 @@ class Player(pygame.sprite.Sprite):
 		# COLLISION CHECKING
 
 		# collision checking for platforms
-		# only checks for bottom collisions; otherwise goes through platform
+		# only checks for standing on the platform; otherwise, you can go through
 		block_hit_list = pygame.sprite.spritecollide(self, bg.platforms, False)
 		for block in block_hit_list:
 			if self.rect.colliderect(block.rect):
@@ -187,6 +193,8 @@ class Player(pygame.sprite.Sprite):
 	    if self.vel[0] < 0:
 	    	if self.state == "jumping":
 	    		self.default_image = R.IMAGES["walkL2.png"]
+	    	elif self.walking == False:
+	    		self.default_image = R.IMAGES["walkL1.png"]
 	    	elif n <= 200:
 	    		self.default_image = R.IMAGES["walkL1.png"]
 	    	elif n <= 400 and n > 200:
@@ -200,6 +208,8 @@ class Player(pygame.sprite.Sprite):
 	    elif self.vel[0] >= 0:
 	    	if self.state == "jumping":
 	    		self.default_image = R.IMAGES["walkR2.png"]
+	    	elif self.walking == False:
+	    		self.default_image = R.IMAGES["walkR1.png"]
 	    	elif n <= 200:
 	    		self.default_image = R.IMAGES["walkR1.png"]
 	    	elif n <= 400 and n > 200:

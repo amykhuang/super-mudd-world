@@ -8,6 +8,7 @@ import resources as R
 # fix moving enemy collision bug
 # player flashes when hurt
 # text boxes
+# fix the bug where you can still jump after walking off a platform
 
 class Game:
     def __init__(self):
