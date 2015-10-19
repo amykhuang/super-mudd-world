@@ -17,28 +17,29 @@ class Map(pygame.sprite.Sprite):
 	def make_map(self, map_array, level):
 		""" iterate through map arrays to set platforms, objects, etc.
 		"""
-		for i in range(len(map_array)):	#iterate through rows
-			for j in range(len(map_array[i])):	#iterate through columns
-				n = map_array[i][j]	#type of tile
-				if n == 1:	#invisible platform
+		for i in range(len(map_array)):			# iterate through rows
+			for j in range(len(map_array[i])):	# iterate through columns
+				n = map_array[i][j]				# type of tile
+				if n == 1:		# invisible platform
 					self.platforms.add(Ground(j*64,i*64))
-				if n == 2:	#normal platform
+				if n == 2:		# normal platform
 					self.platforms.add(Platform(j*64,i*64))
-				if n == 3:	#spike platform
+				if n == 3:		# spike platform
 					self.platforms.add(Spike(j*64,i*64))
-				if n == 'w':	#wart
+				if n == 'w':	# wart
 					self.enemies.add(Enemy(j*64,i*64,'wart'))
-				if n == 'c': #cup
+				if n == 'c': 	# cup
 					self.objects.add(Object(j*64,i*64,'cup'))
-				if n == 'g': #glass
+				if n == 'g': 	# glass
 					self.objects.add(Object(j*64,i*64,'glass'))
-				if n == 'R': #Ron
+				if n == 'R': 	# Ron
 					self.friends.add(Friend(j*64,i*64,'ron'))
 
 	def blit(self, screen, dt):
-		screen.blit(self.image, [self.rect.left, self.rect.top])	#background image
-		text = R.FONTS['Fipps Medium'].render(self.title, True, (0,0,0))
-		screen.blit(text, (2,0))	#title
+		title = R.FONTS['Fipps Medium'].render(self.title, True, (0,0,0))
+
+		screen.blit(self.image, [self.rect.left, self.rect.top])
+		screen.blit(title, (2,0))
 		self.platforms.draw(screen)
 		self.enemies.draw(screen)
 		self.objects.draw(screen)

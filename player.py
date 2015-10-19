@@ -11,17 +11,15 @@ class Player(pygame.sprite.Sprite):
 		self.width = self.default_image.get_width()
 		self.rect = self.default_image.get_rect()
 
-		self.move_sound = R.SOUNDS['smb_jumpsmall.wav']
-
 		# states include: start, standing, jumping
 		self.state = "start"
+
+		# state variables
+		self.health = 10 		# keeps track of health
 		self.walking = False	# if not walking, don't do walkcycle images
-		self.isjump = False
 		self.platform_speed_x = 0
-		self.health = 10
 		self.damaged = False	
 		self.damage_time = 0	# once damaged, is immune for a bit
-		self.on_enemy = False	# if standing on top of enemy, no damage
 		self.talking = False	# whether it is talking to a friend
 
 		# position and velocity
@@ -29,7 +27,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect.top = 300
 		self.vel = [0,0]
 
-		# rect for collisions 
+		# rect for collisions // does not yet work
 		self.collideRect = pygame.rect.Rect((0,0), (32,150))
 		self.collideRect.left = self.rect.left
 		self.collideRect.top = self.rect.top
@@ -45,12 +43,14 @@ class Player(pygame.sprite.Sprite):
 	def getEvent(self):
 		""" reads the keypress, and reacts accordingly
 		"""
-		pressed = pygame.key.get_pressed() #get keypress
+		pressed = pygame.key.get_pressed() # get keypress
 
 		self.walking = False
 
 		if pressed[pygame.K_UP] and self.state == "standing":
-			self.isjump = True
+			self.jump()
+			self.state = "jumping"
+			self.platform_speed_x = 0
 
 		if pressed[pygame.K_LEFT] and self.rect.left > 0:
 			self.vel[0] = -R.STEP
@@ -59,7 +59,7 @@ class Player(pygame.sprite.Sprite):
 		if pressed[pygame.K_RIGHT] and self.rect.left < 900:
 			self.vel[0] = R.STEP
 			self.walking = True
-			# self.move_sound.play()
+			# R.SOUNDS['smb_jumpsmall.wav'].play()
 
 		#add the speed of what it's standing on
 		self.vel[0] += self.platform_speed_x
@@ -67,16 +67,10 @@ class Player(pygame.sprite.Sprite):
 	def update(self, dt, bg):
 		""" update the position of the player, 
 		"""
-		#get event from keypress
+		# get event from keypress
 		self.getEvent()
 
-		ticks = pygame.time.get_ticks()	#time elapsed so far
-
-		if self.isjump:	#check if jumping
-			self.jump() #jump!
-			self.isjump = False
-			self.state = "jumping"
-			self.platform_speed_x = 0
+		ticks = pygame.time.get_ticks()		# time elapsed so far
 
 		# update positions
 		dx = self.vel[0]
@@ -89,9 +83,9 @@ class Player(pygame.sprite.Sprite):
 		self.gravity(dt)
 		self.vel[0] = 0
 
-		# change states, if necessary
+		# change the game state, if necessary
 		if self.health <= 0:
-			return "gameover"		#sets game_over to True
+			return "gameover"
 		return "in_game"
 
 	def move(self, dx, dy, bg, dt, ticks):
@@ -99,49 +93,48 @@ class Player(pygame.sprite.Sprite):
 			also checks for collisions
 		"""
 		if self.vel[0] < 0 and self.rect.left > 0:	#move left
-			self.walkcycle(ticks)
 			if (self.rect.left - bg.rect.left <= 200) or (bg.width + bg.rect.left <= R.SCREEN_WIDTH and self.rect.left > 200):
 				self.rect.left += dx
 			elif bg.rect.left < 200:
 				bg.shift_world(dx)
 		if self.vel[0] > 0 and self.rect.left < 900:	#move right
-			self.walkcycle(ticks)
 			if self.rect.left < 200 or (bg.width + bg.rect.left <= R.SCREEN_WIDTH):
 				self.rect.left += dx
 			elif bg.rect.left > R.SCREEN_WIDTH - bg.width:
 				bg.shift_world(dx)
-		self.rect.top += dy
+		self.rect.top += dy 	# gravity
+
+		self.update_image(ticks)
+
 
 		# COLLISION CHECKING
 
 		# collision checking for platforms
-		# only checks for standing on the platform; otherwise, you can go through
+		# can jump through platforms
 		block_hit_list = pygame.sprite.spritecollide(self, bg.platforms, False)
 		for block in block_hit_list:
 			if self.rect.colliderect(block.rect):
 				if dy > 0 and self.rect.bottom <= block.rect.top + 25:
 					self.rect.bottom = block.rect.top
 					self.vel[1] = 0
-					self.state = "standing"
- 					self.platform_speed_x = block.vel[0]	#save platform speed
+ 					self.platform_speed_x = block.vel[0]	# save platform speed
+ 					self.state = "standing"
+
 
 		# collision checking for enemies
-		self.on_enemy = False
 		block_hit_list = pygame.sprite.spritecollide(self, bg.enemies, False)
 		for enemy in block_hit_list:
 			if self.rect.colliderect(enemy.rect):
+
 				if dy > 0 and self.rect.bottom < enemy.rect.bottom:
 					self.rect.bottom = enemy.rect.top
 					self.vel[1] = 0
 					self.state = "standing"
-					self.on_enemy = True
- 					self.platform_speed_x = enemy.vel[0]	#save platform speed
-				# if dy < 0:
-				# 	self.rect.top = block.rect.bottom
-				# 	self.vel[1] = -0.3 * self.vel[1]
-
+ 					self.platform_speed_x = enemy.vel[0]	# save platform speed
+				
 				# check for damage and record time
-				self.damage_time = self.damage(enemy, ticks)
+				else:
+					self.damage_time = self.damage(enemy, ticks)
 
 		# collision checking for objects
 		block_hit_list = pygame.sprite.spritecollide(self, bg.objects, False)
@@ -153,7 +146,7 @@ class Player(pygame.sprite.Sprite):
 				# gain health when colliding with healthy objects
 				elif thing.health:
 					self.health += thing.health
-					thing.kill()
+					thing.kill()	# destroy object
 
 		# collision checking for other characters
 		block_hit_list = pygame.sprite.spritecollide(self, bg.friends, False)
@@ -162,20 +155,22 @@ class Player(pygame.sprite.Sprite):
 
 				# if it is a speaking friend
 				if dx > 0 and friend.speak:
-					self.rect.right = friend.rect.left
 					self.talking = True
 				# if it has finished speaking, do nothing					
 	
 	def damage(self, block, ticks):
 		""" decreases health when running into things
+			the player flashes red
 		"""
 		#runs into spike platform
 		if block.species == "spike" and self.damaged == False:
+			self.flash()
 			self.health -= 1
 			self.damaged = True
 			return ticks
 		#runs into enemy
-		elif block.deadly == True and self.on_enemy == False and self.damaged == False:
+		elif block.deadly == True and self.damaged == False:
+			self.flash()
 			self.health -= 1
 			self.damaged = True
 			return ticks
@@ -184,8 +179,10 @@ class Player(pygame.sprite.Sprite):
 				self.damaged = False
 			return self.damage_time
 
-	def walkcycle(self, ticks):
-	    """ creates the walking animation
+	def update_image(self, ticks):
+	    """ updates player's displayed image
+	    	cycles through walking images
+	    	flashes red when damaged
 	    """
 	    n = ticks % 800
 
@@ -218,6 +215,17 @@ class Player(pygame.sprite.Sprite):
 	    		self.default_image = R.IMAGES["walkR3.png"]
 	    	else:
 	    		self.default_image = R.IMAGES["walkR2.png"]
+
+
+	def flash(self):
+		flash_image = self.default_image.copy()
+
+		# recolor all non-transparent pixels to red
+		for x in range(flash_image.get_size()[0]):
+			for y in range(flash_image.get_size()[1]):
+				if flash_image.get_at([x, y]) != (255,255,255):
+					flash_image.set_at([x, y], (178,34,34))
+		self.default_image = flash_image
 
 
 	def gravity(self, dt):

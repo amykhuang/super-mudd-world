@@ -31,7 +31,7 @@ class Game:
         done = False
 
         clock = pygame.time.Clock()
-        fps = 30 #time step        
+        fps = 30    # frames per second      
         
         while not done:
             pressed = pygame.key.get_pressed()
@@ -40,12 +40,12 @@ class Game:
                     done = True
 
             if state == "in_game":
-                screen.fill(R.BLACK)    #erases past junk
+                screen.fill(R.BLACK)    # erases past junk
 
-                background.blit(screen, 1.0/fps) #blit things to screen
+                background.blit(screen, 1.0/fps) # blit things to screen
                 player.blit(screen)
 
-                state = player.update(1.0/fps, background)   #player update
+                state = player.update(1.0/fps, background)   # player update
                 
             elif state == "gameover":
                 endscreen = Endscreen(screen)

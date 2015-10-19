@@ -6,13 +6,14 @@ class Enemy(pygame.sprite.DirtySprite):
 	def __init__(self, x, y, typ):
 		pygame.sprite.Sprite.__init__(self)
 
-		enemy_dict = {	# [image, walkdistance, stepsize, health]
+		# [image, walkdistance, stepsize, health]
+		enemy_dict = {	
 			'wart': [R.IMAGES["wart1L.png"], 100, 3, 3]
 		}
 
 		self.image = enemy_dict[typ][0]
 		self.start = x
-		self.end = self.start + enemy_dict[typ][1]	#distance that it walks
+		self.end = self.start + enemy_dict[typ][1]	# its walking range
 
 		self.height = self.image.get_height()
 		self.width = self.image.get_width()
@@ -49,6 +50,8 @@ class Enemy(pygame.sprite.DirtySprite):
 
 	def walkcycle(self, ticks):
 		n = ticks % 800
+
+		# walkcycles for other objects
 		cycles = {
 			"wart": [R.IMAGES["wart1L.png"], R.IMAGES["wart2L.png"], R.IMAGES["wart3L.png"], R.IMAGES["wart1R.png"], R.IMAGES["wart2R.png"], R.IMAGES["wart3R.png"]]
 		}
