@@ -53,7 +53,9 @@ class Enemy(pygame.sprite.DirtySprite):
 
 		# walkcycles for other objects
 		cycles = {
-			"wart": [R.IMAGES["wart1L.png"], R.IMAGES["wart2L.png"], R.IMAGES["wart3L.png"], R.IMAGES["wart1R.png"], R.IMAGES["wart2R.png"], R.IMAGES["wart3R.png"]]
+			"wart": [R.IMAGES["wart1L.png"], R.IMAGES["wart2L.png"],\
+			R.IMAGES["wart3L.png"], R.IMAGES["wart1R.png"], R.IMAGES["wart2R.png"],\
+			R.IMAGES["wart3R.png"]]
 		}
 		if self.vel[0] < 0:
 			if n <= 200:

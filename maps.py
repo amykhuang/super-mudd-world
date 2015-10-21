@@ -45,11 +45,9 @@ class Map(pygame.sprite.Sprite):
 		self.objects.draw(screen)
 		self.friends.draw(screen)
 
-		#update enemy positions
+		# update enemy positions
 		self.enemies.update(self.rect.left)
 
-		#update textboxes
-		self.friends.update(screen)
 
 	def shift_world(self, shift):
 		""" moves the background objects as the player moves
@@ -88,7 +86,8 @@ class Endscreen(Map):
 		title_rect = title.get_rect()
 		title_x = R.SCREEN_WIDTH/2 - title_rect.width/2
 		title_y = R.SCREEN_HEIGHT/2 - title_rect.height/2 - 20
-		subtitle = R.FONTS['Fipps Small'].render("Press space to play again. Press q to quit.", True, (100,0,0))
+		subtitle_text = "Press space to play again. Press q to quit."
+		subtitle = R.FONTS['Fipps Small'].render(subtitle_text, True, (100,0,0))
 		subtitle_rect = subtitle.get_rect()
 		subtitle_x = R.SCREEN_WIDTH/2 - subtitle_rect.width/2
 		subtitle_y = R.SCREEN_HEIGHT/2 - subtitle_rect.height/2 + 70
