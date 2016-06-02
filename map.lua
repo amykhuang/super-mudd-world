@@ -11,14 +11,13 @@ require 'items'
 require 'enemy'
 require 'friend'
 
+require 'introscreen'
 require '/maps/map01'
 require 'endscreen'
 
 
 Map = {}
 Map.__index = Map
-
-local toPrint = ''	-- DEBUG
 
 
 function Map.new(mapNum)
@@ -71,8 +70,6 @@ function Map:draw()
 		local e = self.entities[i]
 		if e.active and e.img then e:draw() end
 	end
-
-	love.graphics.print(toPrint, 100, 100)	-- DEBUG
 
 end
 

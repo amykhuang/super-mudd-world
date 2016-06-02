@@ -12,9 +12,6 @@ Player.__index = Player
 local gravity = 1500
 local stepSize = 3
 
--- for debugging
-local toPrint = ''
-
 
 function Player.new()
 	local self = {}
@@ -43,7 +40,7 @@ function Player.new()
 	self.walking = false
 	self.x_platform_speed = 0
 	self.damaged = false
-	self.active = true
+	self.active = false
 
 	-- walkcycle
 	self:loadImages()
@@ -104,7 +101,6 @@ function Player:update(dt, bg)
 end
 
 function Player:draw()
-	love.graphics.print(toPrint, 10, 10)
 	local health = love.graphics.newText(fonts['fippsM'], {black,self.health})
 
 	love.graphics.draw(health, WINDOW_W - health:getWidth() - 10, 10)

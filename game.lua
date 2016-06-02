@@ -1,6 +1,6 @@
 --
 --  game.lua
---  
+--  controls the flow of the game
 --
 
 require 'resources'
@@ -16,7 +16,7 @@ function Game.new()
 	local self = {}
 	setmetatable(self, Game)
 
-	self.state = 'play'
+	self.state = 'intro'
 	self.level = 1
 
 	return self
@@ -25,12 +25,29 @@ end
 
 function Game:load()
 
-	map = Map.new(self.level)
+	map = Introscreen.new()
 	player = Player.new()
 
 end
 
 function Game:update(dt)
+
+	-- intro state
+	if self.state == 'intro' then
+
+		map:update(dt)
+
+		-- begin game with finished
+		if map.page == map.lastpage then
+
+			self.state = 'play'
+
+			map = Map.new(self.level)
+			player.active = true
+
+		end
+
+	end
 
 	-- play state
 	if self.state == 'play' then
@@ -44,7 +61,9 @@ function Game:update(dt)
 		friend.speaking = true
 		map:update(dt)
 
-		if friend:isDone() then self.state = 'play' end
+		if friend:isDone() then
+			self.state = 'play'
+		end
 
 	-- gameover state
 	elseif self.state == 'gameover' then
@@ -63,7 +82,17 @@ function Game:keypressed(key)
 		love.event.push('quit')
 	end
 
+	if self.state == 'intro' then
+
+		-- continue with spacebar
+		if key == 'space' then
+			map.page = map.page + 1
+		end
+
+	end
+
 	if self.state == 'play' then
+
 		-- talk if spacebar is pressed within range
 		if key == 'space' and player.state == 'standing' then
 			friend = player:isNearFriend(map.friends)
@@ -72,6 +101,7 @@ function Game:keypressed(key)
 				self.state = 'talk'
 			end
 		end
+
 	end
 
 	if self.state == 'talk' then

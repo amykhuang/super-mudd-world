@@ -2,7 +2,6 @@
 --  resources.lua
 --  global variables and the like
 
-
 -- sizes
 WINDOW_W = 1024
 WINDOW_H = 640
@@ -14,20 +13,30 @@ TILE_H = 64
 black = {0,0,0}
 white = {255,255,255}
 red = {100,0,0}
+aqua = {0,204,204}
 
--- hardon collider
+-- collision management
 HC = require 'hardoncollider'
 -- Collider = HC(64)
 
+-- pretty text
+lib = require 'tastytext.tastytext'
+
+-- animations
+require("AnAL")
 
 -- fonts
 fonts = {
+	fippsXL	= love.graphics.newFont('data/fonts/Fipps-Regular.otf', 48),
+	fippsL	= love.graphics.newFont('data/fonts/Fipps-Regular.otf', 40),
 	fippsM	= love.graphics.newFont('data/fonts/Fipps-Regular.otf', 32),
 	fippsS	= love.graphics.newFont('data/fonts/Fipps-Regular.otf', 24),
-	emu 	= love.graphics.newFont('data/fonts/emulogic.ttf', 15)
+	fippsXS	= love.graphics.newFont('data/fonts/Fipps-Regular.otf', 16),
+	emuS 	= love.graphics.newFont('data/fonts/emulogic.ttf', 24),
+	emuXS 	= love.graphics.newFont('data/fonts/emulogic.ttf', 16)
 }
 
-
+--
 -- entity info
 
 blocks = {}
@@ -129,3 +138,25 @@ friends[1] = {
 	height = 126,
 	offset = { x = 4, y = 2 }
 }
+
+--
+-- useful functions
+
+function centerAlignPos(text, x_offset, y_offset)
+
+	pos_x = WINDOW_W/2 - text:getWidth()/2 + x_offset
+	pos_y = WINDOW_H/2 - text:getHeight()/2 + y_offset
+	
+	return pos_x, pos_y
+
+end
+
+
+function leftAlignPos(text, x_offset, y_offset)
+
+	pos_x = 50 + x_offset
+	pos_y = 30 + y_offset
+	
+	return pos_x, pos_y
+
+end

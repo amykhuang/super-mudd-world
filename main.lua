@@ -21,3 +21,9 @@ end
 function love.draw(dt)
 	g:draw()
 end
+
+--
+-- todo
+--
+-- animate the intro screen
+-- 
